@@ -15,17 +15,40 @@
 	<description>micro service e-wallet</description>
 	<properties>
 		<java.version>17</java.version>
+		<sonar.host.url>http://localhost:9001</sonar.host.url>
+		<sonar-maven-plugin.version>3.9.1.2171</sonar-maven-plugin.version>
 	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+	    <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+        </dependency>
+        <dependency>
+		    <groupId>io.projectreactor.kafka</groupId>
+		    <artifactId>reactor-kafka</artifactId>
 		</dependency>
 	</dependencies>
 
@@ -35,6 +58,30 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+	            <groupId>org.sonarsource.scanner.maven</groupId>
+	            <artifactId>sonar-maven-plugin</artifactId>
+	            <version>${sonar-maven-plugin.version}</version>
+	        </plugin>
+	       <!-- Plugin de Checkstyle -->
+           <plugin>
+	            <groupId>org.apache.maven.plugins</groupId>
+	            <artifactId>maven-checkstyle-plugin</artifactId>
+	            <version>3.1.1</version> <!-- Versión específica del plugin -->
+	            <executions>
+	                <execution>
+	                    <id>checkstyle</id>
+	                    <phase>validate</phase>
+	                    <goals>
+	                        <goal>check</goal>
+	                    </goals>
+	                </execution>
+	            </executions>
+	            <configuration>
+	                <configLocation>checkstyle.xml</configLocation>
+	                <!-- Puedes agregar otras configuraciones aquí -->
+	            </configuration>
+        	</plugin>
 		</plugins>
 	</build>
 

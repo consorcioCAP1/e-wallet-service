@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nttdata.bootcamp.ewalletservice.documents.EWallet;
 import com.nttdata.bootcamp.ewalletservice.repository.EWalletRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -23,11 +24,11 @@ public class KakfaService {
 
 	@Autowired
     private EWalletRepository repository;
-	
 	private final ObjectMapper objectMapper;
     private final KafkaReceiver<String, String> kafkaReceiver;
     private final KafkaSender<String, String> kafkaSender;
     private final String topicUpdateBalanceWallet = "updateBalanceAccount";
+    private final String topic = "topicprueba";
 
     public KakfaService( KafkaReceiver<String, String> kafkaReceiver,
             ObjectMapper objectMapper,KafkaSender<String, String> kafkaSender) {
@@ -40,6 +41,7 @@ public class KakfaService {
     public void startConsumeTopic() {
     	 consumeTopics();
     }
+
     private void consumeTopics() {
         kafkaReceiver.receive()
             .doOnNext(record -> {
@@ -58,8 +60,6 @@ public class KakfaService {
     }
 	public void consumeTopicSaveWallet(String value){
 	    log.info("ingreso al primer topic de topicUpdateWallet2");
-	    System.out.println("ingreso al primer  topic de topicUpdateWallet2");
-	    
         try {
         	JsonNode jsonNode = objectMapper.readTree(value);
             String numberCardDebit = jsonNode.get("numberCardDebit").asText();
@@ -85,7 +85,6 @@ public class KakfaService {
 	
 	public void updateBalanceWallet(String value){
 	    log.info("ingreso al Segundo topic de updateBalanceWallet");
-	    System.out.println("ingreso al Segundo topic de updateBalanceWallet");
 		try {
 			JsonNode jsonNode = objectMapper.readTree(value);
 			 String bankAccountNumber = jsonNode.get("bankAccountNumber").asText();
@@ -113,5 +112,13 @@ public class KakfaService {
             
         kafkaSender.send(Mono.just(SenderRecord.create(
         	new ProducerRecord<>(topicUpdateBalanceWallet, message), null))).subscribe();
+	}
+
+	public void validateNumberCard(EWallet eWallet) {
+		String message = "{\"numberCardDebit\": \"" + eWallet.getNumberCardDebit() 
+		+ "\", \"phone\": \"" + eWallet.getPhone() + "\"}";
+		
+		kafkaSender.send(Mono.just(SenderRecord.create(new ProducerRecord<>(topic, message), null)))
+		.subscribe(); 
 	}
 }

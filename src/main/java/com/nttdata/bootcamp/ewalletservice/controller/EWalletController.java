@@ -1,6 +1,5 @@
 package com.nttdata.bootcamp.ewalletservice.controller;
 
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -8,12 +7,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.nttdata.bootcamp.ewalletservice.documents.EWallet;
 import com.nttdata.bootcamp.ewalletservice.service.EWalletService;
+import com.nttdata.bootcamp.ewalletservice.service.impl.KakfaService;
 import reactor.core.publisher.Mono;
-import reactor.kafka.sender.KafkaSender;
-import reactor.kafka.sender.SenderRecord;
 
 
 @RestController
@@ -23,12 +20,8 @@ public class EWalletController {
 	@Autowired
     private EWalletService eWalletService;
 
-	private final KafkaSender<String, String> kafkaSender;
-    private final String topic = "topicprueba";
-    
-    public EWalletController(KafkaSender<String, String> kafkaSender) {
-        this.kafkaSender = kafkaSender;
-    }
+	@Autowired
+    private KakfaService kakfaService;
 
 	@PostMapping("/save")
     public Mono<EWallet> saveEWallet(@RequestBody EWallet eWallet) {
@@ -50,12 +43,7 @@ public class EWalletController {
 
     @PostMapping("/validateNumberCard")
     public Mono<ResponseEntity<String>> validateNumberCard(@RequestBody EWallet eWallet) {
-        // Envía un mensaje al topic con el número de tarjeta para validar
-        String message = "{\"numberCardDebit\": \"" + eWallet.getNumberCardDebit() 
-        					+ "\", \"phone\": \"" + eWallet.getPhone() + "\"}";
-
-        kafkaSender.send(Mono.just(SenderRecord.create(new ProducerRecord<>(topic, message), null)))
-        		.subscribe();       
+    	kakfaService.validateNumberCard(eWallet);
         return Mono.just(ResponseEntity.ok("Mensaje enviado para validar el número de tarjeta."));
     }
 }
